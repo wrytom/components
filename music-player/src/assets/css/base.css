@@ -1,0 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap");
+
+:root {
+    --bg-color: rgba(185, 198, 255, 0.1);
+    --text-color: rgb(55, 55, 55);
+
+    --disc-color: #bfbfc4;
+    --inside-disc-1: #cec9d0;
+    --inside-disc-2: #9ea1ad;
+}
