@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Compose UI - Vue.js</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div class="suggestions">
+        <div
+          class="picture-sug"
+          ref="pictureSuggestionEl"
+        >
+          <div class="images">
+            <img
+              src="assets/images/img1.jpeg"
+              class="img-sug1"
+              alt="Suggested Image 1"
+              ref="img1Ref"
+            />
+            <img
+              src="assets/images/img2.jpeg"
+              class="img-sug2"
+              alt="Suggested Image 2"
+              ref="img2Ref"
+            />
+          </div>
+          <p class="sug-text">Attach pictures from today</p>
+        </div>
+
+        <div
+          class="location-sug"
+          ref="locationSuggestionEl"
+        >
+          <p>Pin</p>
+          <div class="location">
+            <img
+              src="assets/icons/location.svg"
+              class="icon-location"
+              alt="Location Icon"
+            />
+            <p class="location-text">
+              {{ extractedLocation || 'Fetching...' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="smart-compose">
+        <img
+          src="assets/icons/quill.svg"
+          class="icon-compose"
+          alt="Compose Icon"
+        />
+        <input
+          placeholder="Start composing..."
+          v-model="text"
+          @input="smartCompose"
+          class="input-compose"
+        />
+        <button
+          class="btn-compose"
+          @click="sendMessage"
+          aria-label="Send Message"
+        >
+          <img src="assets/icons/send.svg" alt="Send Icon" />
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const { createApp, ref, watchEffect, onMounted } = Vue;
+
+      const App = {
+        setup() {
+          const img1Ref = ref(null);
+          const img2Ref = ref(null);
+          const pictureSuggestionEl = ref(null);
+          const locationSuggestionEl = ref(null);
+
+          const text = ref("");
+          const locationSuggestion = ref(false);
+          const pictureSuggestion = ref(false);
+          const extractedLocation = ref("");
+
+          const smartCompose = () => {
+            const locationMatch = text.value.match(/meet at ([^\?]+)\?/i);
+            if (locationMatch && locationMatch[1]) {
+              extractedLocation.value = locationMatch[1].trim();
+              showLocationSuggestion();
+            } else {
+              hideLocationSuggestion();
+            }
+
+            const pictureKeywords = ["great time", "today", "with"];
+            if (pictureKeywords.some((keyword) => text.value.toLowerCase().includes(keyword))) {
+              showPictureSuggestion();
+            } else {
+              hidePictureSuggestion();
+            }
+          };
+
+          const showPictureSuggestion = () => {
+            if (!pictureSuggestion.value) {
+              pictureSuggestion.value = true;
+              const tl = gsap.timeline();
+              tl.to(pictureSuggestionEl.value, {
+                display: 'flex',
+                opacity: 1,
+                y: 0,
+                filter: 'blur(0px)',
+                duration: 0.4,
+                ease: 'power2.out'
+              })
+              .fromTo(
+                img1Ref.value,
+                { transform: "rotate(0deg)" },
+                { transform: "rotate(-10deg)", duration: 0.25 },
+                "<0.1"
+              )
+              .fromTo(
+                img2Ref.value,
+                { transform: "rotate(0deg)", marginLeft: "-2.5rem" },
+                {
+                  transform: "rotate(10deg)",
+                  marginLeft: "-1.5rem",
+                  duration: 0.15,
+                },
+                "<0.2"
+              );
+            }
+          };
+
+          const hidePictureSuggestion = () => {
+            if (pictureSuggestion.value) {
+              gsap.to(pictureSuggestionEl.value, {
+                opacity: 0,
+                y: 20,
+                filter: 'blur(10px)',
+                duration: 0.4,
+                ease: 'power2.out',
+                onComplete: () => {
+                  pictureSuggestion.value = false;
+                  gsap.set(pictureSuggestionEl.value, { display: 'none' });
+                }
+              });
+            }
+          };
+
+          const showLocationSuggestion = () => {
+            if (!locationSuggestion.value) {
+              locationSuggestion.value = true;
+              gsap.to(locationSuggestionEl.value, {
+                display: 'flex',
+                opacity: 1,
+                y: 0,
+                filter: 'blur(0px)',
+                duration: 0.3,
+                ease: 'power4.in'
+              });
+            }
+          };
+
+          const hideLocationSuggestion = () => {
+            if (locationSuggestion.value) {
+              gsap.to(locationSuggestionEl.value, {
+                opacity: 0,
+                y: 20,
+                filter: 'blur(10px)',
+                duration: 0.3,
+                ease: 'power2.out',
+                onComplete: () => {
+                  locationSuggestion.value = false;
+                  gsap.set(locationSuggestionEl.value, { display: 'none' });
+                }
+              });
+            }
+          };
+
+          const sendMessage = () => {
+            console.log("Message sent:", text.value);
+            text.value = "";
+          };
+
+          return {
+            img1Ref,
+            img2Ref,
+            pictureSuggestionEl,
+            locationSuggestionEl,
+            text,
+            locationSuggestion,
+            pictureSuggestion,
+            extractedLocation,
+            smartCompose,
+            sendMessage,
+          };
+        },
+      };
+
+      createApp(App).mount("#app");
+    </script>
+  </body>
+</html>
